@@ -36,15 +36,23 @@ void print_word(int k, uint16_t value) {
     }
 }
 
+int cardinal_bit(uint16_t value) {
+    int cpt = 0;
+    for (int i = 15; i >= 0; i--) {  // Parcours les bits du poids fort au poids faible
+        if ((value >> i) & 1) {  // Si le i-ème bit est 1
+            cpt++;
+        }
+    }
+    return cpt;
+}
+
 int main(int argc, char const *argv[]) {
     uint16_t m = 0;
-    int n = 0;
     printf("Entrez un nombre entre 0 et 65 535 (16 bits): ");
     scanf("%hu", &m);  // Utiliser le format de conversion %hu pour lire un uint16_t
     printf("Le nombre binaire est : ");
     print_binary(m);  // Afficher la représentation binaire de m
     printf("\n");
-    print_word(4, m);
-    printf("\n");
+    printf("cardinal bit 1 : %d\n"), cardinal_bit(m);
     return 0;
 }
