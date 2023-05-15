@@ -13,6 +13,11 @@ ici ont part sur un mot de taille de 8 donc un polynome de degrés 8
 donc sur un mot de 16 bits => il ya 8 bits qui contient le mot (les bits de poids
 fort) et les 8 autres ce sont 
 
+> dans un premier temps nous allons faire un exemple avec un bit de parité
+
+> ici nous allons prendre un mot un 8 bits avec un polynome de degrés 8
+> donc le mots finale sera de 16 bits
+
 
 ### Question 1
 > Pour simplifier votre travail, 
