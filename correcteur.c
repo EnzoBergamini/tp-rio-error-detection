@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#define WORD_SIZE 7
+#define WORD_SIZE 8
+#define POLYNOMIAL 0x07
 
 uint8_t chg_nth_bit(int n, uint8_t m) {
     uint8_t mask = 1 << n;  // Créer un masque pour le n-ième bit (en partant de 0)
@@ -19,7 +20,7 @@ uint8_t get_nth_bit(int n, uint8_t m) {
 }
 
 void print_binary(uint8_t value) {
-    for (int i = 15; i >= 0; i--) {  // Parcours les bits du poids fort au poids faible
+    for (int i = WORD_SIZE - 1; i >= 0; i--) {  // Parcours les bits du poids fort au poids faible
         if ((value >> i) & 1) {  // Si le i-ème bit est 1
             printf("1");
         } else {  // Si le i-ème bit est 0
@@ -29,7 +30,7 @@ void print_binary(uint8_t value) {
 }
 
 void print_word(int k, uint8_t value) {
-    for (int i = 15; i >= 15 - k + 1; i--) {  // Parcours les bits du poids fort au poids faible
+    for (int i = WORD_SIZE - 1; i >= WORD_SIZE - 1 - k + 1; i--) {  // Parcours les bits du poids fort au poids faible
         if ((value >> i) & 1) {  // Si le i-ème bit est 1
             printf("1");
         } else {  // Si le i-ème bit est 0
@@ -73,14 +74,30 @@ uint8_t parity_bit(uint8_t m){
     }
 }
 
+uint8_t crcGeneration(uint8_t m){
+    uint8_t crc = 0;
+
+    for (int i = 0; i < 8; i++){
+        if ((crc ^ m) & 0x80){
+            crc = (crc << 1) ^ POLYNOMIAL;
+        }else{
+            crc <<= 1;
+        }
+        m <<= 1;
+    }
+
+    return crc;
+}
+
 int main(int argc, char const *argv[]) {
     uint8_t m = 0;
-    printf("Entrez un nombre entre 0 et 65 535 (16 bits): ");
-    scanf("%hu", &m);  // Utiliser le format de conversion %hu pour lire un uint8_t
-    printf("Le nombre binaire est : ");
+    printf("Entrez un nombre (8 bits): ");
+
+    scanf("%hhu", &m);  // Lire un entier non signé sur 8 bits
+
+    printf("Le nombre binaire est : %d\n", m);
     print_binary(m);  // Afficher la représentation binaire de m
-    printf("\n");
-    int nb_cardinal_bit = cardinal_bit(m);
-    printf("cardinal bit 1 : %d\n", nb_cardinal_bit);
+    uint8_t crc = crcGeneration(m);
+    printf("\nLe CRC est : %d\n", crc);
     return 0;
 }
