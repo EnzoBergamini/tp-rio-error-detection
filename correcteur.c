@@ -19,8 +19,18 @@ uint8_t get_nth_bit(int n, uint8_t m) {
     return (m & mask) >> n;  // Appliquer le masque avec l'opérateur "et" binaire pour récupérer le n-ième bit
 }
 
-void print_binary(uint8_t value) {
-    for (int i = WORD_SIZE - 1; i >= 0; i--) {  // Parcours les bits du poids fort au poids faible
+void print_binary_8bit(uint8_t value) {
+    for (int i = 7; i >= 0; i--) {  // Parcours les bits du poids fort au poids faible
+        if ((value >> i) & 1) {  // Si le i-ème bit est 1
+            printf("1");
+        } else {  // Si le i-ème bit est 0
+            printf("0");
+        }
+    }
+}
+
+void print_binary_16bit(uint16_t value) {
+    for (int i = 15; i >= 0; i--) {  // Parcours les bits du poids fort au poids faible
         if ((value >> i) & 1) {  // Si le i-ème bit est 1
             printf("1");
         } else {  // Si le i-ème bit est 0
@@ -77,7 +87,7 @@ uint8_t parity_bit(uint8_t m){
 uint8_t crcGeneration(uint8_t m){
     uint8_t crc = 0;
 
-    for (int i = 0; i < 8; i++){
+    for (int i = 0; i < WORD_SIZE; i++){
         if ((crc ^ m) & 0x80){
             crc = (crc << 1) ^ POLYNOMIAL;
         }else{
@@ -89,6 +99,24 @@ uint8_t crcGeneration(uint8_t m){
     return crc;
 }
 
+int crcVerif(uint16_t m) {
+    uint8_t message = (m >> 8) & 0xFF;    // Extraire les 8 bits de message
+    uint8_t error = m & 0xFF;             // Extraire les 8 bits de code d'erreur
+
+    if (crcGeneration(message) == error) {
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
+uint16_t concat(uint8_t m, uint8_t crc) {
+    uint16_t message = m;
+    message <<= 8;
+    message |= crc;
+    return message;
+}
+
 int main(int argc, char const *argv[]) {
     uint8_t m = 0;
     printf("Entrez un nombre (8 bits): ");
@@ -96,8 +124,14 @@ int main(int argc, char const *argv[]) {
     scanf("%hhu", &m);  // Lire un entier non signé sur 8 bits
 
     printf("Le nombre binaire est : %d\n", m);
-    print_binary(m);  // Afficher la représentation binaire de m
+    print_binary_8bit(m);  // Afficher la représentation binaire de m
     uint8_t crc = crcGeneration(m);
     printf("\nLe CRC est : %d\n", crc);
+    print_binary_8bit(crc);
+
+    uint16_t message = concat(m, crc);
+
+    printf("\nLe message concaténé est : %d\n", message);
+    print_binary_16bit(message);
     return 0;
 }
