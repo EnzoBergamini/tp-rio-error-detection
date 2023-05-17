@@ -4,7 +4,7 @@
 #define WORD_SIZE 8
 #define POLYNOMIAL 0x07
 
-uint8_t chg_nth_bit(int n, uint8_t m) {
+uint16_t chg_nth_bit(int n, uint16_t m) {
     uint8_t mask = 1 << n;  // Créer un masque pour le n-ième bit (en partant de 0)
     return m ^ mask;  // Appliquer le masque avec l'opérateur "ou exclusif" binaire pour inverser le n-ième bit
 }
@@ -49,20 +49,10 @@ void print_word(int k, uint8_t value) {
     }
 }
 
-int cardinal_bit(uint8_t value) {
+int cardinal_bit(uint16_t value) {
     int cpt = 0;
     for (int i = 15; i >= 0; i--) {  // Parcours les bits du poids fort au poids faible
         if ((value >> i) & 1) {  // Si le i-ème bit est 1
-            cpt++;
-        }
-    }
-    return cpt;
-}
-
-int hamming_distance(uint8_t m){
-    int cpt = 0;
-    for (int i = 0; i < 2; i--) {  // Parcours les bits du poids fort au poids faible
-        if ((m >> i) & 1) {  // Si le i-ème bit est 1
             cpt++;
         }
     }
@@ -117,6 +107,21 @@ uint16_t concat(uint8_t m, uint8_t crc) {
     return message;
 }
 
+int hamming_distance(uint16_t m){
+    int min = 999;
+    for (int i = 1; i < 256; ++i) {
+        uint8_t crc = crcGeneration(i);
+        uint16_t message = concat(i, crc);
+        print_binary_16bit(message);
+        int distance = cardinal_bit(message);
+        printf("\ndistance de hamming : %d\n", distance);
+        if (distance < min){
+            min = distance;
+        }
+    }
+    return min;
+}
+
 int main(int argc, char const *argv[]) {
     uint8_t m = 0;
     printf("Entrez un nombre (8 bits): ");
@@ -133,5 +138,17 @@ int main(int argc, char const *argv[]) {
 
     printf("\nLe message concaténé est : %d\n", message);
     print_binary_16bit(message);
+
+    printf("\n");
+
+    printf("\nLa distance de hamming est : %d\n", hamming_distance(message));
+
+    if (crcVerif(message) == 0){
+        printf("\nLe message est valide\n");
+    }else{
+        printf("\nLe message est invalide\n");
+    }
+
+
     return 0;
 }
