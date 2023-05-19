@@ -2,10 +2,11 @@
 #include <stdint.h>
 
 #define WORD_SIZE 8
-#define POLYNOMIAL 0x07
+#define POLYNOMIAL 0xD5
+#define MULTIPLE_ERROR 500
 
 uint16_t chg_nth_bit(int n, uint16_t m) {
-    uint8_t mask = 1 << n;  // Créer un masque pour le n-ième bit (en partant de 0)
+    uint16_t mask = 1 << n;  // Créer un masque pour le n-ième bit (en partant de 0)
     return m ^ mask;  // Appliquer le masque avec l'opérateur "ou exclusif" binaire pour inverser le n-ième bit
 }
 
@@ -40,7 +41,7 @@ void print_binary_16bit(uint16_t value) {
 }
 
 void print_word(int k, uint8_t value) {
-    for (int i = WORD_SIZE - 1; i >= WORD_SIZE - 1 - k + 1; i--) {  // Parcours les bits du poids fort au poids faible
+    for (int i = 15; i >= 16 - k; i--) {  // Parcours les bits du poids fort au poids faible
         if ((value >> i) & 1) {  // Si le i-ème bit est 1
             printf("1");
         } else {  // Si le i-ème bit est 0
@@ -89,15 +90,30 @@ uint8_t crcGeneration(uint8_t m){
     return crc;
 }
 
-int crcVerif(uint16_t m) {
+uint8_t crcVerif(uint16_t m) {
     uint8_t message = (m >> 8) & 0xFF;    // Extraire les 8 bits de message
     uint8_t error = m & 0xFF;             // Extraire les 8 bits de code d'erreur
 
-    if (crcGeneration(message) == error) {
+    uint8_t new_crc = crcGeneration(message);
+    if (new_crc == error) {
         return 0;
     } else {
-        return 1;
+        return new_crc;
     }
+}
+
+int crc_error_amount(uint16_t m){
+    for (int i = 8; i < 16; ++i) {
+        m = chg_nth_bit(i, m);
+
+        if (crcVerif(m) == 0){
+            return i-8;
+        }
+
+        m = chg_nth_bit(i, m);
+    }
+
+    return MULTIPLE_ERROR;
 }
 
 uint16_t concat(uint8_t m, uint8_t crc) {
@@ -107,14 +123,15 @@ uint16_t concat(uint8_t m, uint8_t crc) {
     return message;
 }
 
+/**
+ * @brief calcule la distance de hamming pour un message donné
+ */
 int hamming_distance(uint16_t m){
     int min = 999;
     for (int i = 1; i < 256; ++i) {
         uint8_t crc = crcGeneration(i);
         uint16_t message = concat(i, crc);
-        print_binary_16bit(message);
         int distance = cardinal_bit(message);
-        printf("\ndistance de hamming : %d\n", distance);
         if (distance < min){
             min = distance;
         }
@@ -134,19 +151,28 @@ int main(int argc, char const *argv[]) {
     printf("\nLe CRC est : %d\n", crc);
     print_binary_8bit(crc);
 
+
     uint16_t message = concat(m, crc);
 
     printf("\nLe message concaténé est : %d\n", message);
     print_binary_16bit(message);
 
-    printf("\n");
+    message = chg_nth_bit(10, message);
+    message = chg_nth_bit(14, message);
+    printf("\nLe message modif est : %d\n", message);
+    print_binary_16bit(message);
 
-    printf("\nLa distance de hamming est : %d\n", hamming_distance(message));
-
-    if (crcVerif(message) == 0){
+    uint8_t error = crcVerif(message);
+    if (error == 0){
         printf("\nLe message est valide\n");
     }else{
         printf("\nLe message est invalide\n");
+        int error_index = crc_error_amount(message);
+        if (error_index == MULTIPLE_ERROR){
+            printf("Il y a plusieurs erreurs\n");
+        }else{
+            printf("L'erreur est à la position %d\n", error_index);
+        }
     }
 
 

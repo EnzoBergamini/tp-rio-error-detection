@@ -31,3 +31,16 @@ fort) et les 8 autres ce sont
 
 ### Question 2
 > Implémentez le calcul du cardinal des bits à 1 dans un mot de votre code.
+
+
+## syndrome
+le syndrome est le résultat du reste de la division du mot par le polynome si il est null => pas d'erreur
+sinon il y a une erreur avec ce syndrome ont peut savoir si il y a une erreur ou plusieur erreur et si il n'y en a qu'une 
+ont peut savoir sont emplacement
+
+### detection du nombre d'erreur
+si le syndrome est null => pas d'erreur et sinon il ya au moin une erreur
+ici la distance de hamming est de 4 avec le polynome de degrés 8 (OxD5) donc ont peut
+detecter 3 erreurs au maximum et si il ya 1 erreur ont peut la corriger
+
+#### si il y a une erreur
