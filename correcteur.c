@@ -169,7 +169,7 @@ uint8_t crcVerif(uint16_t m) {
  * si le message contient une erreur, on renvoie l'index du bit qui est erroné
  *
  * @param m le message de 16 bits
- * @return int l'index du bit erroné ou si il y a plus d'une erreur, MULTIPLE_ERROR
+ * @return int l'index du bit erroné ou si il y a plus d'une erreur, -1
  */
 int crc_error_amount(uint16_t m){
     for (int i = 8; i < 16; ++i) {
@@ -182,7 +182,7 @@ int crc_error_amount(uint16_t m){
         m = chg_nth_bit(i, m);
     }
 
-    return MULTIPLE_ERROR;
+    return -1;
 }
 
 /**
@@ -220,6 +220,7 @@ int hamming_distance(uint16_t m){
     return min;
 }
 
+
 int main(int argc, char const *argv[]) {
     uint8_t m = 0;
     printf("Entrez un nombre (8 bits): ");
@@ -238,7 +239,6 @@ int main(int argc, char const *argv[]) {
     printf("\nLe message concaténé est : %d\n", message);
     print_binary_16bit(message);
 
-    message = chg_nth_bit(10, message);
     message = chg_nth_bit(14, message);
     printf("\nLe message modif est : %d\n", message);
     print_binary_16bit(message);
@@ -249,10 +249,14 @@ int main(int argc, char const *argv[]) {
     }else{
         printf("\nLe message est invalide\n");
         int error_index = crc_error_amount(message);
-        if (error_index == MULTIPLE_ERROR){
+        if (error_index == -1){
             printf("Il y a plusieurs erreurs\n");
         }else{
             printf("L'erreur est à la position %d\n", error_index);
+            message = chg_nth_bit(error_index+8, message);
+
+            printf("Le message corrigé est : %d\n", message);
+            print_binary_16bit(message);
         }
     }
 
